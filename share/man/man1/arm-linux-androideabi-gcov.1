@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "GCOV 1"
-.TH GCOV 1 "2013-02-18" "gcc-4.7.3" "GNU"
+.TH GCOV 1 "2012-12-07" "gcc-4.7.x-google" "GNU"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -137,14 +137,17 @@ gcov [\fB\-v\fR|\fB\-\-version\fR] [\fB\-h\fR|\fB\-\-help\fR]
      [\fB\-a\fR|\fB\-\-all\-blocks\fR]
      [\fB\-b\fR|\fB\-\-branch\-probabilities\fR]
      [\fB\-c\fR|\fB\-\-branch\-counts\fR]
+     [\fB\-m\fR|\fB\-\-pmu\-profile\fR]
      [\fB\-u\fR|\fB\-\-unconditional\-branches\fR]
      [\fB\-n\fR|\fB\-\-no\-output\fR]
      [\fB\-l\fR|\fB\-\-long\-file\-names\fR]
      [\fB\-p\fR|\fB\-\-preserve\-paths\fR]
+     [\fB\-q\fR|\fB\-\-pmu_profile\-path\fR]
      [\fB\-r\fR|\fB\-\-relative\-only\fR]
      [\fB\-f\fR|\fB\-\-function\-summaries\fR]
      [\fB\-o\fR|\fB\-\-object\-directory\fR \fIdirectory|file\fR]
      [\fB\-s\fR|\fB\-\-source\-prefix\fR \fIdirectory\fR]
+     [\fB\-i\fR|\fB\-\-intermediate\-format\fR]
      [\fB\-d\fR|\fB\-\-display\-progress\fR]
      \fIfiles\fR
 .SH "DESCRIPTION"
@@ -247,6 +250,20 @@ be shown, unless the \fB\-u\fR option is given.
 .PD
 Write branch frequencies as the number of branches taken, rather than
 the percentage of branches taken.
+.IP "\fB\-m\fR" 4
+.IX Item "-m"
+.PD 0
+.IP "\fB\-\-pmu\-profile\fR" 4
+.IX Item "--pmu-profile"
+.PD
+Output the additional \s-1PMU\s0 profile information if available.
+.IP "\fB\-q\fR" 4
+.IX Item "-q"
+.PD 0
+.IP "\fB\-\-pmu_profile\-path\fR" 4
+.IX Item "--pmu_profile-path"
+.PD
+\&\s-1PMU\s0 profile path (default \fIpmuprofile.gcda\fR).
 .IP "\fB\-n\fR" 4
 .IX Item "-n"
 .PD 0
@@ -338,6 +355,35 @@ Unconditional branches are normally not interesting.
 .IX Item "--display-progress"
 .PD
 Display the progress on the standard output.
+.IP "\fB\-i\fR" 4
+.IX Item "-i"
+.PD 0
+.IP "\fB\-\-intermediate\-format\fR" 4
+.IX Item "--intermediate-format"
+.PD
+Output gcov file in an intermediate text format that can be used by
+\&\fBlcov\fR or other applications. It will output a single *.gcov file per
+*.gcda file. No source code is required.
+.Sp
+The format of the intermediate \fI.gcov\fR file is plain text with
+one entry per line
+.Sp
+.Vb 5
+\&        SF:<source_file_name>
+\&        FN:<line_number>,<function_name>
+\&        FNDA:<execution_count>,<function_name>
+\&        BA:<line_num>,<branch_coverage_type>
+\&        DA:<line number>,<execution_count>
+\&        
+\&        Where the <branch_coverage_type> is
+\&           0 (Branch not executed)
+\&           1 (Branch executed, but not taken)
+\&           2 (Branch executed and taken)
+\&        
+\&        There can be multiple SF entries in an intermediate gcov file. All
+\&        entries following SF pertain to that source file until the next SF
+\&        entry.
+.Ve
 .PP
 \&\fBgcov\fR should be run with the current directory the same as that
 when you invoked the compiler.  Otherwise it will not be able to locate
@@ -636,6 +682,12 @@ each location might not be the same.  For instance, a condition might
 now be calculable at compile time in some instances.  Because the
 coverage of all the uses of the inline function will be shown for the
 same source lines, the line counts themselves might seem inconsistent.
+.PP
+Long-running applications can use the \f(CW\*(C`_gcov_reset\*(C'\fR and \f(CW\*(C`_gcov_dump\*(C'\fR
+facilities to restrict profile collection to the program region of
+interest. Calling \f(CW\*(C`_gcov_reset(void)\*(C'\fR will clear all profile counters
+to zero, and calling \f(CW\*(C`_gcov_dump(void)\*(C'\fR will cause the profile information
+collected at that point to be dumped to \fI.gcda\fR output files.
 .SH "SEE ALSO"
 .IX Header "SEE ALSO"
 \&\fIgpl\fR\|(7), \fIgfdl\fR\|(7), \fIfsf\-funding\fR\|(7), \fIgcc\fR\|(1) and the Info entry for \fIgcc\fR.
