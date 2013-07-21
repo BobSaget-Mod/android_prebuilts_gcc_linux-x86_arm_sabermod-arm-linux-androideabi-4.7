@@ -1,6 +1,6 @@
 /* plugin-api.h -- External linker plugin API.  */
 
-/* Copyright 2009 Free Software Foundation, Inc.
+/* Copyright 2009, 2010 Free Software Foundation, Inc.
    Written by Cary Coutant <ccoutant@google.com>.
 
    This file is part of binutils.
@@ -66,7 +66,8 @@ enum ld_plugin_output_file_type
 {
   LDPO_REL,
   LDPO_EXEC,
-  LDPO_DYN
+  LDPO_DYN,
+  LDPO_PIE
 };
 
 /* An input file managed by the plugin library.  */
@@ -92,6 +93,8 @@ struct ld_plugin_symbol
   char *comdat_key;
   int resolution;
 };
+
+/* An object's section.  */
 
 struct ld_plugin_section
 {
@@ -153,7 +156,13 @@ enum ld_plugin_symbol_resolution
   LDPR_RESOLVED_EXEC,
 
   /* This symbol was resolved by a definition in a shared object.  */
-  LDPR_RESOLVED_DYN
+  LDPR_RESOLVED_DYN,
+
+  /* This is the prevailing definition of the symbol, with no
+     references from regular objects.  It is only referenced from IR
+     code, but the symbol is exported and may be referenced from
+     a dynamic object (not seen at link time).  */
+  LDPR_PREVAILING_DEF_IRONLY_EXP
 };
 
 /* The plugin library's "claim file" handler.  */
@@ -250,7 +259,6 @@ typedef
 enum ld_plugin_status
 (*ld_plugin_message) (int level, const char *format, ...);
 
-
 /* The linker's interface for retrieving the number of sections in an object.
    The handle is obtained in the claim_file handler.  This interface should
    only be invoked in the claim_file handler.   This function sets *COUNT to
@@ -346,7 +354,8 @@ enum ld_plugin_tag
   LDPT_GET_INPUT_SECTION_NAME,
   LDPT_GET_INPUT_SECTION_CONTENTS,
   LDPT_UPDATE_SECTION_ORDER,
-  LDPT_ALLOW_SECTION_ORDERING
+  LDPT_ALLOW_SECTION_ORDERING,
+  LDPT_GET_SYMBOLS_V2
 };
 
 /* The plugin transfer vector.  */
